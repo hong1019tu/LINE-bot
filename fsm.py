@@ -188,7 +188,7 @@ class TocMachine(GraphMachine):
         stats_st4 = result[4].select("td")
         stats_st5 = result[5].select("td")
         stats_st6 = result[6].select("td")
-        for q in range(1,8):
+        for q in range(1,7):
             if len(title_st[q].getText().split()[0]) == 2 and q==1:
                 t_add0 = title_st[q].getText().split()[0] + "                     "
             else:
@@ -281,7 +281,7 @@ class TocMachine(GraphMachine):
                 fifth = fifth + t_add5 + "   "
                 sixth = sixth + t_add6 + "   "
             elif q==5:
-                zero = zero + t_add0 + "      "
+                zero = zero + t_add0 + "        "
                 first = first + t_add1 + "       "
                 sec = sec + t_add2 + "         "
                 third = third + t_add3 + "         "
@@ -296,7 +296,7 @@ class TocMachine(GraphMachine):
                 forth = forth + t_add4 + "         "
                 fifth = fifth + t_add5 + "         "
                 sixth = sixth + t_add6 + "         "
-        st = "                        Please use horizontal mode to watch!!!\n*******************************************************************\n" + zero+ "\n*******************************************************************\n" + "1. "+first + "\n*******************************************************************\n" +"2. "+ sec + "\n*******************************************************************\n" +"3. "+ third + "\n*******************************************************************\n" +"4. "+ forth + "\n*******************************************************************\n" +"5. "+ fifth + "\n*******************************************************************\n" +"6. "+ sixth
+        st = "                        Please use horizontal mode to watch!!!\n**************************************************************\n" + zero+ "\n**************************************************************\n" + "1. "+first + "\n**************************************************************\n" +"2. "+ sec + "\n**************************************************************\n" +"3. "+ third + "\n**************************************************************\n" +"4. "+ forth + "\n**************************************************************\n" +"5. "+ fifth + "\n**************************************************************\n" +"6. "+ sixth
         reply_token = event.reply_token
         send_text_message(reply_token, st) #一次印完
         #self.go_back()
