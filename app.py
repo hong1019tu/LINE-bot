@@ -19,8 +19,14 @@ load_dotenv()
 
 
 machine = TocMachine(
-    states=["initial","game_info", "stats_leader_info", "teams_info" , "rank_info","player_info","game_info_date","game_info_team","point_leader","assist_leader","rebound_leader","kings","braves","dreamers","pilots","steelers","lioneers","choose_player"],
+    states=["highlights","showpic","initial","game_info", "stats_leader_info", "teams_info" , "rank_info","player_info","point_leader","assist_leader","rebound_leader","kings","braves","dreamers","pilots","steelers","lioneers","choose_player","choose_pic"],
     transitions=[
+        {
+            "trigger": "advance",
+            "source": "initial",
+            "dest": "highlights",
+            "conditions": "is_going_to_highlights",
+        },
         {
             "trigger": "advance",
             "source": "initial",
@@ -93,12 +99,18 @@ machine = TocMachine(
             "dest": "player_info",
             "conditions": "is_going_to_player_info",
         },
-        # {
-        #     "trigger": "advance",
-        #     "source": "game_info",
-        #     "dest": "game_info_date",
-        #     "conditions": "is_going_to_gameinfodate",
-        # },
+        {
+            "trigger": "advance",
+            "source": "choose_pic",
+            "dest": "showpic",
+            "conditions": "is_going_to_showpic",
+        },
+        {
+            "trigger": "advance",
+            "source": "initial",
+            "dest": "choose_pic",
+            "conditions": "is_going_to_choose_pic",
+        },
         {
             "trigger": "advance",
             "source": "stats_leader_info",
@@ -116,27 +128,12 @@ machine = TocMachine(
             "source": "stats_leader_info",
             "dest": "rebound_leader",
             "conditions": "is_going_to_rebound_leader",
-        },{   
-            "trigger": "go_back_teams", 
-            "source": ["kings", "lioneers","braves","pilots","dreamers","steelers"], 
-            "dest": "teams_info"
-        },
-        {   
-            "trigger": "go_back_player", 
-            "source": "player_info", 
-            "dest": "choose_player"
-        },
-        {   
-            "trigger": "advance", 
-            "source": ["game_info", "stats_leader_info","teams_info","rank_info","choose_player"], 
-            "dest": "initial",
-            "conditions":"back_to_menu"
         },
         {   
             "trigger": "go_back", 
-            "source": ["point_leader", "rebound_leader","assist_leader"], 
-            "dest": "stats_leader_info"
-        }#trigger後看condition 若沒有則直接觸發
+            "source": ["highlights","showpic","point_leader", "rebound_leader","assist_leader","kings", "lioneers","braves","pilots","dreamers","steelers","rank_info","player_info","showpic"], 
+            "dest": "initial",
+        },
     ],
     initial="initial",
     auto_transitions=False,
@@ -213,9 +210,9 @@ def webhook_handler():
             continue
         print(f"\nFSM STATE: {machine.state}")
         print(f"REQUEST BODY: \n{body}")
-        response = machine.advance(event)#advance 可自己取
+        response = machine.advance(event)
         if response == False:
-            send_text_message(event.reply_token, "Not Entering any State")
+            send_text_message(event.reply_token, "invalid input !please try again\nexample input:\nshow game information\nshow team picture\nshow player information\nshow rank information\nshow stats leader")
 
     return "OK"
 

@@ -1,10 +1,19 @@
 from transitions.extensions import GraphMachine
 
-from utils import send_text_message
+from utils import send_text_message,send_image_message,send_button_message,send_video_message
 from bs4 import BeautifulSoup
-from abc import ABC, abstractmethod
+from linebot import LineBotApi
+from linebot.models import (
+    MessageEvent,
+    TextSendMessage,
+    TemplateSendMessage,
+    ButtonsTemplate,
+    MessageTemplateAction
+)
+#from abc import ABC, abstractmethod
 import requests
 import numpy as np
+#line_bot_api = LineBotApi(settings.LINE_CHANNEL_ACCESS_TOKEN)
 class TocMachine(GraphMachine):
     def __init__(self, **machine_configs):
         self.machine = GraphMachine(model=self, **machine_configs)
@@ -16,35 +25,108 @@ class TocMachine(GraphMachine):
         text = event.message.text
         return text.lower() == "show game information"
     
+    def is_going_to_choose_pic(self, event):
+        text = event.message.text
+        return text.lower() == "show team picture"
+    
+    def on_enter_choose_pic(self, event):
+        title = "請選擇球隊"
+        text = "請選擇球隊"
+        btn = [
+            MessageTemplateAction(
+                label = "新北國王",
+                text = "新北國王"
+            ),
+            MessageTemplateAction(
+                label = "台北富邦勇士",
+                text = "台北富邦勇士"
+            ),
+            MessageTemplateAction(
+                label = "新竹街口攻城獅",
+                text = "新竹街口攻城獅"
+            ),
+            MessageTemplateAction(
+                label = "福爾摩沙台新夢想家",
+                text = "福爾摩沙台新夢想家"
+            ),
+            # MessageTemplateAction(
+            #     label = "高雄鋼鐵人",
+            #     text = "高雄鋼鐵人"
+            # ),
+            # MessageTemplateAction(
+            #     label = "新竹攻城獅",
+            #     text = "新竹攻城獅"
+            # ),
+        ]
+        url = "https://upload.cc/i1/2021/12/27/lx7LHV.jpg"
+        reply_token = event.reply_token
+        send_button_message(reply_token, title, text, btn, url)
+    
+    def is_going_to_showpic(self, event):
+        text = event.message.text
+        global team_pic
+        team_pic = text
+        if len(text)>0 and len(text)<10:
+            return 1
+        else:
+            return 0
+    
+    def on_enter_showpic(self, event):
+        print("I'm entering graph")
+        pic = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJEPUlEBNeESH2BZrXY01N1zcr9ud1W7GCyw&usqp=CAUm"
+        if team_pic == "新北國王":
+            pic = "https://pleagueofficial.com/upload/p_team/logo_5_1632361561.png"
+        elif team_pic == "台北富邦勇士":
+            pic = "https://pleagueofficial.com/upload/p_team/logo_1_1605758005.png"
+        elif team_pic == "福爾摩沙台新夢想家":
+            pic = "https://upload.wikimedia.org/wikipedia/zh/9/9e/%E7%A6%8F%E7%88%BE%E6%91%A9%E6%B2%99%E5%8F%B0%E6%96%B0%E5%A4%A2%E6%83%B3%E5%AE%B6.png"
+        elif team_pic == "新竹街口攻城獅":   
+            pic = "https://pleagueofficial.com/upload/p_team/logo_3_1607584510.png"
+        reply_token = event.reply_token
+        send_image_message(reply_token, pic)
+        self.go_back()
+        
+        
+    
     def on_enter_game_info(self, event):
         response = requests.get(pleague)
         soup = BeautifulSoup(response.text, "html.parser")
-        result = soup.find_all("h6",limit=60)
-        date = soup.find_all("span",class_="text-light fs14",limit=60)
-        place = soup.find_all("span",class_="text-light fs12",limit=60)
-        # game1 = date[0].getText() + "\n" + place[0].getText() + "\n" + result[1].getText() + result[2].getText() + result[3].getText();
-        # game2 = date[1].getText() + "\n" + place[1].getText() + "\n" + result[4].getText() + result[5].getText() + result[6].getText();
-        # game3 = date[2].getText() + "\n" + place[2].getText() + "\n" + result[7].getText() + result[8].getText() + result[9].getText();
-        # game4 = date[3].getText() + "\n" + place[3].getText() + "\n" + result[10].getText() + result[11].getText() + result[12].getText();
-        # game5 = date[4].getText() + "\n" + place[4].getText() + "\n" + result[13].getText() + result[14].getText() + result[15].getText();
-        # game6 = date[5].getText() + "\n" + place[5].getText() + "\n" + result[16].getText() + result[17].getText() + result[18].getText();
-        # game7 = date[6].getText() + "\n" + place[6].getText() + "\n" + result[19].getText() + result[20].getText() + result[21].getText();
-        # game8 = date[7].getText() + "\n" + place[7].getText() + "\n" + result[22].getText() + result[23].getText() + result[24].getText();
-        # game9 = date[8].getText() + "\n" + place[8].getText() + "\n" + result[25].getText() + result[26].getText() + result[27].getText();
-        # game10 = date[9].getText() + "\n" + place[9].getText() + "\n" + result[28].getText() + result[29].getText() + result[30].getText();
-        # game11 = date[10].getText() + "\n" + place[10].getText() + "\n" + result[31].getText() + result[32].getText() + result[33].getText();
-        # game12 = date[11].getText() + "\n" + place[11].getText() + "\n" + result[34].getText() + result[35].getText() + result[36].getText();
-        # game13 = date[12].getText() + "\n" + place[12].getText() + "\n" + result[37].getText() + result[38].getText() + result[39].getText();
-        # game14 = date[13].getText() + "\n" + place[13].getText() + "\n" + result[40].getText() + result[41].getText() + result[42].getText();
-        # game15 = date[14].getText() + "\n" + place[14].getText() + "\n" + result[43].getText() + result[44].getText() + result[45].getText();
-        # game16 = date[15].getText() + "\n" + place[15].getText() + "\n" + result[46].getText() + result[47].getText() + result[48].getText();
-        #ggg = game1 + "\n\n"+game2+"\n\n"+game3+"\n\n"+game4+"\n\n"+game5+"\n\n"+game6+"\n\n"+game7+"\n\n"+game8+"\n\n"+game9+"\n\n"+game10+"\n\n"+game11+"\n\n"+game12+"\n\n"+game13+"\n\n"+game14+"\n\n"+game15+"\n\n"+game16
-        print(date[1].getText())
-        print(place[1].getText()) 
+        result = soup.find_all("div",class_= "game_card_info1",limit=20)
+        #print(result[15].getText())
+        ggg = ""
+        game1 = result[0].getText()
+        game2 = result[1].getText()
+        game3 = result[2].getText()
+        game4 = result[3].getText()
+        game5 = result[4].getText()
+        game6 = result[5].getText()
+        game7 = result[6].getText()
+        game8 = result[7].getText()
+        game9 = result[8].getText()
+        game10 = result[9].getText()
+        game11 = result[10].getText()
+        game12= result[11].getText()
+        game13 = result[12].getText()
+        game14 = result[13].getText()
+        game15 = result[14].getText()
+        game16 = result[15].getText()
+        game17 = result[16].getText()
+        ggg = game1 + "\n\n"+game2+"\n\n"+game3+"\n\n"+game4+"\n\n"+game5+"\n\n"+game6+"\n\n"+game7+"\n\n"+game8+"\n\n"+game9+"\n\n"+game10+"\n\n"+game11+"\n\n"+game12+"\n\n"+game13+"\n\n"+game14+"\n\n"+game15+"\n\n"+game16
         reply_token = event.reply_token
         send_text_message(reply_token, ggg) #一次印完
-        #self.go_back()
-        
+        self.go_back()
+    
+    def is_going_to_highlights(self, event):
+        text = event.message.text
+        return text.lower() == "show highlights"
+    
+    def on_enter_highlights(self, event):
+        print("highlights this week")
+        video = "https://i.imgur.com/kU0GPhG.mp4"
+        reply_token = event.reply_token
+        send_video_message(reply_token, video)
+        self.go_back()
+       
     def is_going_to_statsleaderinfo(self, event):
         text = event.message.text
         return text.lower() == "show stats leader"
@@ -56,6 +138,7 @@ class TocMachine(GraphMachine):
         #self.go_back()
     
     def is_going_to_teams_info(self, event):
+        reply_token = event.reply_token
         text = event.message.text
         return text.lower() == "show team information"
     
@@ -80,7 +163,8 @@ class TocMachine(GraphMachine):
             st = st + "\n[" + title_st[q].getText()+"]:  "+stats_st[q-1].getText()+"\n********************************\n" 
         reply_token = event.reply_token
         send_text_message(reply_token, st) #一次印完
-        self.go_back_teams()
+        # self.go_back_teams()
+        self.go_back()
         
     def is_going_to_braves(self,event):
         text = event.message.text
@@ -91,14 +175,15 @@ class TocMachine(GraphMachine):
         response = requests.get(team_stats)
         soup = BeautifulSoup(response.text, "html.parser")
         result = soup.find_all("tr",limit=60)
-        st = "[" + result[0].th.getText()+"]:  "+result[3].th.getText()+"\n********************************\n"
+        st = "[" + result[0].th.getText()+"]:  "+result[2].th.getText()+"\n********************************\n"
         title_st = result[0].select("th")
-        stats_st = result[3].select("td")
+        stats_st = result[2].select("td")
         for q in range(1,21):
             st = st + "\n[" + title_st[q].getText()+"]:  "+stats_st[q-1].getText() +"\n********************************\n"
         reply_token = event.reply_token
         send_text_message(reply_token, st) #一次印完
-        self.go_back_teams()
+        #self.go_back_teams()
+        self.go_back()
         
     def is_going_to_lioneers(self,event):
         text = event.message.text
@@ -108,14 +193,16 @@ class TocMachine(GraphMachine):
         response = requests.get(team_stats)
         soup = BeautifulSoup(response.text, "html.parser")
         result = soup.find_all("tr",limit=60)
-        st = "[" + result[0].th.getText()+"]:  "+result[2].th.getText()+"\n********************************\n"
+        st = "[" + result[0].th.getText()+"]:  "+result[3].th.getText()+"\n********************************\n"
         title_st = result[0].select("th")
-        stats_st = result[2].select("td")
+        stats_st = result[3].select("td")
         for q in range(1,21):
             st = st + "\n[" + title_st[q].getText()+"]:  "+stats_st[q-1].getText() + "\n********************************\n"
         reply_token = event.reply_token
         send_text_message(reply_token, st) #一次印完
-        self.go_back_teams()
+        #self.go_back_teams()
+        self.go_back()
+        
     def is_going_to_pilots(self,event):
         text = event.message.text
         return text.lower() == "pilots"
@@ -124,14 +211,16 @@ class TocMachine(GraphMachine):
         response = requests.get(team_stats)
         soup = BeautifulSoup(response.text, "html.parser")
         result = soup.find_all("tr",limit=60)
-        st = "[" + result[0].th.getText()+"]:  "+result[6].th.getText()+"\n********************************\n"
+        st = "[" + result[0].th.getText()+"]:  "+result[5].th.getText()+"\n********************************\n"
         title_st = result[0].select("th")
-        stats_st = result[6].select("td")
+        stats_st = result[5].select("td")
         for q in range(1,21):
             st = st + "\n[" + title_st[q].getText()+"]:  "+stats_st[q-1].getText() +"\n********************************\n"
         reply_token = event.reply_token
         send_text_message(reply_token, st) #一次印完
-        self.go_back_teams()
+        #self.go_back_teams()
+        self.go_back()
+        
     def is_going_to_dreamers(self,event):
         text = event.message.text
         return text.lower() == "dreamers"
@@ -145,9 +234,12 @@ class TocMachine(GraphMachine):
         stats_st = result[4].select("td")
         for q in range(1,21):
             st = st + "\n[" + title_st[q].getText()+"]:  "+stats_st[q-1].getText() +"\n********************************\n"
+        print(stats_st[0].getText())
         reply_token = event.reply_token
         send_text_message(reply_token, st) #一次印完
-        self.go_back_teams()
+        #self.go_back_teams()
+        self.go_back()
+        
     def is_going_to_steelers(self,event):
         text = event.message.text
         return text.lower() == "steelers"
@@ -156,14 +248,16 @@ class TocMachine(GraphMachine):
         response = requests.get(team_stats)
         soup = BeautifulSoup(response.text, "html.parser")
         result = soup.find_all("tr",limit=60)
-        st = "[" + result[0].th.getText()+"]:  "+result[5].th.getText()+"\n********************************\n"
+        st = "[" + result[0].th.getText()+"]:  "+result[6].th.getText()+"\n********************************\n"
         title_st = result[0].select("th")
-        stats_st = result[5].select("td")
+        stats_st = result[6].select("td")
         for q in range(1,21):
             st = st + "\n[" + title_st[q].getText()+"]:  "+stats_st[q-1].getText() + "\n********************************\n"
         reply_token = event.reply_token
         send_text_message(reply_token, st) #一次印完
-        self.go_back_teams()
+        #self.go_back_teams()
+        self.go_back()
+        
     def is_going_to_rank_info(self, event):
         text = event.message.text
         return text.lower() == "show rank information"
@@ -299,7 +393,7 @@ class TocMachine(GraphMachine):
         st = "                        Please use horizontal mode to watch!!!\n**************************************************************\n" + zero+ "\n**************************************************************\n" + "1. "+first + "\n**************************************************************\n" +"2. "+ sec + "\n**************************************************************\n" +"3. "+ third + "\n**************************************************************\n" +"4. "+ forth + "\n**************************************************************\n" +"5. "+ fifth + "\n**************************************************************\n" +"6. "+ sixth
         reply_token = event.reply_token
         send_text_message(reply_token, st) #一次印完
-        #self.go_back()
+        self.go_back()
         
     def is_going_to_choose_player(self, event):
         text = event.message.text
@@ -354,9 +448,9 @@ class TocMachine(GraphMachine):
                 st = st + "[犯規]:  "+playerinfo[21].getText()+"\n********************************"
                 reply_token = event.reply_token
                 send_text_message(reply_token,st) #一次印完
-                self.go_back_player()
+                self.go_back()
                 #flag = 1
-                #break
+                break
                 # return
             #reply_token = event.reply_token
             # if flag == 1:
@@ -460,9 +554,9 @@ class TocMachine(GraphMachine):
         send_text_message(reply_token,st) #一次印完
         self.go_back()
     
-    def back_to_menu(self, event):
-        text = event.message.text
-        return text.lower() == "back to menu"
+    # def back_to_menu(self, event):
+    #     text = event.message.text
+    #     return text.lower() == "back to menu"
     # def on_exit_state1(self):
     #     print("Leaving state1")
 
