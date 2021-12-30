@@ -14,6 +14,7 @@ from linebot.models import (
 import requests
 import numpy as np
 #line_bot_api = LineBotApi(settings.LINE_CHANNEL_ACCESS_TOKEN)
+print_or_not = 0
 class TocMachine(GraphMachine):
     def __init__(self, **machine_configs):
         self.machine = GraphMachine(model=self, **machine_configs)
@@ -61,6 +62,7 @@ class TocMachine(GraphMachine):
         url = "https://upload.cc/i1/2021/12/27/lx7LHV.jpg"
         reply_token = event.reply_token
         send_button_message(reply_token, title, text, btn, url)
+        
     
     def is_going_to_showpic(self, event):
         text = event.message.text
@@ -84,9 +86,10 @@ class TocMachine(GraphMachine):
             pic = "https://pleagueofficial.com/upload/p_team/logo_3_1607584510.png"
         reply_token = event.reply_token
         send_image_message(reply_token, pic)
-        self.go_back()
         
-        
+    def back_to_choose_pic(self, event):
+        text = event.message.text
+        return text.lower() == "one more time"   
     
     def on_enter_game_info(self, event):
         response = requests.get(pleague)
@@ -114,7 +117,6 @@ class TocMachine(GraphMachine):
         ggg = game1 + "\n\n"+game2+"\n\n"+game3+"\n\n"+game4+"\n\n"+game5+"\n\n"+game6+"\n\n"+game7+"\n\n"+game8+"\n\n"+game9+"\n\n"+game10+"\n\n"+game11+"\n\n"+game12+"\n\n"+game13+"\n\n"+game14+"\n\n"+game15+"\n\n"+game16
         reply_token = event.reply_token
         send_text_message(reply_token, ggg) #一次印完
-        self.go_back()
     
     def is_going_to_highlights(self, event):
         text = event.message.text
@@ -125,33 +127,26 @@ class TocMachine(GraphMachine):
         video = "https://i.imgur.com/kU0GPhG.mp4"
         reply_token = event.reply_token
         send_video_message(reply_token, video)
-        self.go_back()
        
-    def is_going_to_statsleaderinfo(self, event):
-        text = event.message.text
-        return text.lower() == "show stats leader"
-    
-    def on_enter_stats_leader_info(self, event):
-        print("I'm entering stats leader")
-        reply_token = event.reply_token
-        send_text_message(reply_token, "please enter the stats you want to know\n(point/rebound/assist)") #一次印完
-        #self.go_back()
     
     def is_going_to_teams_info(self, event):
-        reply_token = event.reply_token
         text = event.message.text
+        global print_or_not
+        if text.lower() == "show team information":
+            print_or_not = 0
         return text.lower() == "show team information"
     
     def on_enter_teams_info(self,event):
         print("I'm entering teams information")
-        reply_token = event.reply_token
-        send_text_message(reply_token, "please enter the team you want to know") #一次印完
-        #self.go_back()
+        if print_or_not == 0:
+            reply_token = event.reply_token
+            send_text_message(reply_token, "please enter the team you want to know\n(kings/braves/pilots/lioneers/dreamers/steelers)") #一次印完
     def is_going_to_kings(self,event):
         text = event.message.text
         return text.lower() == "kings"
     
     def on_enter_kings(self, event):
+        global print_or_not
         print("show kings information")
         response = requests.get(team_stats)
         soup = BeautifulSoup(response.text, "html.parser")
@@ -163,14 +158,15 @@ class TocMachine(GraphMachine):
             st = st + "\n[" + title_st[q].getText()+"]:  "+stats_st[q-1].getText()+"\n********************************\n" 
         reply_token = event.reply_token
         send_text_message(reply_token, st) #一次印完
-        # self.go_back_teams()
-        self.go_back()
+        print_or_not = 1
+        self.go_back_team(event)
         
     def is_going_to_braves(self,event):
         text = event.message.text
         return text.lower() == "braves"
     
     def on_enter_braves(self, event):
+        global print_or_not
         print("show braves information")
         response = requests.get(team_stats)
         soup = BeautifulSoup(response.text, "html.parser")
@@ -183,12 +179,14 @@ class TocMachine(GraphMachine):
         reply_token = event.reply_token
         send_text_message(reply_token, st) #一次印完
         #self.go_back_teams()
-        self.go_back()
+        print_or_not = 1
+        self.go_back_team(event)
         
     def is_going_to_lioneers(self,event):
         text = event.message.text
         return text.lower() == "lioneers"
     def on_enter_lioneers(self, event):
+        global print_or_not
         print("show lioneers information")
         response = requests.get(team_stats)
         soup = BeautifulSoup(response.text, "html.parser")
@@ -201,12 +199,14 @@ class TocMachine(GraphMachine):
         reply_token = event.reply_token
         send_text_message(reply_token, st) #一次印完
         #self.go_back_teams()
-        self.go_back()
+        print_or_not = 1
+        self.go_back_team(event)
         
     def is_going_to_pilots(self,event):
         text = event.message.text
         return text.lower() == "pilots"
     def on_enter_pilots(self, event):
+        global print_or_not
         print("show pilots information")
         response = requests.get(team_stats)
         soup = BeautifulSoup(response.text, "html.parser")
@@ -219,12 +219,14 @@ class TocMachine(GraphMachine):
         reply_token = event.reply_token
         send_text_message(reply_token, st) #一次印完
         #self.go_back_teams()
-        self.go_back()
+        print_or_not = 1
+        self.go_back_team(event)
         
     def is_going_to_dreamers(self,event):
         text = event.message.text
         return text.lower() == "dreamers"
     def on_enter_dreamers(self, event):
+        global print_or_not
         print("show dreamers information")
         response = requests.get(team_stats)
         soup = BeautifulSoup(response.text, "html.parser")
@@ -238,12 +240,14 @@ class TocMachine(GraphMachine):
         reply_token = event.reply_token
         send_text_message(reply_token, st) #一次印完
         #self.go_back_teams()
-        self.go_back()
+        print_or_not = 1
+        self.go_back_team(event)
         
     def is_going_to_steelers(self,event):
         text = event.message.text
         return text.lower() == "steelers"
     def on_enter_steelers(self, event):
+        global print_or_not
         print("show steelers information")
         response = requests.get(team_stats)
         soup = BeautifulSoup(response.text, "html.parser")
@@ -254,9 +258,10 @@ class TocMachine(GraphMachine):
         for q in range(1,21):
             st = st + "\n[" + title_st[q].getText()+"]:  "+stats_st[q-1].getText() + "\n********************************\n"
         reply_token = event.reply_token
-        send_text_message(reply_token, st) #一次印完
+        send_text_message(reply_token, st)
+        print_or_not = 1
         #self.go_back_teams()
-        self.go_back()
+        self.go_back_team(event)
         
     def is_going_to_rank_info(self, event):
         text = event.message.text
@@ -267,7 +272,6 @@ class TocMachine(GraphMachine):
         response = requests.get(pleague)
         soup = BeautifulSoup(response.text, "html.parser")
         result = soup.find_all("tr",limit=7)
-        #print(result[1])
         zero = "     "
         first = ""
         sec = ""
@@ -390,18 +394,22 @@ class TocMachine(GraphMachine):
                 forth = forth + t_add4 + "         "
                 fifth = fifth + t_add5 + "         "
                 sixth = sixth + t_add6 + "         "
-        st = "                        Please use horizontal mode to watch!!!\n**************************************************************\n" + zero+ "\n**************************************************************\n" + "1. "+first + "\n**************************************************************\n" +"2. "+ sec + "\n**************************************************************\n" +"3. "+ third + "\n**************************************************************\n" +"4. "+ forth + "\n**************************************************************\n" +"5. "+ fifth + "\n**************************************************************\n" +"6. "+ sixth
+        st = "                     Please use horizontal mode to watch!!!\n**************************************************************\n" + zero+ "\n**************************************************************\n" + "1. "+first + "\n**************************************************************\n" +"2. "+ sec + "\n**************************************************************\n" +"3. "+ third + "\n**************************************************************\n" +"4. "+ forth + "\n**************************************************************\n" +"5. "+ fifth + "\n**************************************************************\n" +"6. "+ sixth
         reply_token = event.reply_token
         send_text_message(reply_token, st) #一次印完
-        self.go_back()
         
     def is_going_to_choose_player(self, event):
         text = event.message.text
+        global print_or_not
+        if text.lower() == "show player information":
+            print_or_not = 0
         return text.lower() == "show player information"
     
     def on_enter_choose_player(self, event):
-        reply_token = event.reply_token
-        send_text_message(reply_token, "enter the player you want to know") #一次印完
+        global print_or_not
+        if print_or_not == 0:
+            reply_token = event.reply_token
+            send_text_message(reply_token, "enter the player you want to know") #一次印完
         
     def is_going_to_player_info(self, event):
         global player  
@@ -413,13 +421,15 @@ class TocMachine(GraphMachine):
     
     def on_enter_player_info(self, event):
         global player 
+        global print_or_not
+        print_or_not = 1
         flag = 0
         st = "[名字]:  "+player+"\n********************************\n"
         response = requests.get(player_stats)
         soup = BeautifulSoup(response.text, "html.parser")
-        result = soup.find_all("tr",limit=300)
-        reply_token = event.reply_token
-        for q in range(1,300):
+        result = soup.find_all("tr",limit=93)
+        # reply_token = event.reply_token
+        for q in range(1,93):
             if result[q].select_one("th").a.getText() == player:
                 #st = st + result[q].select_one("th").a.getText()+"\n"
                 # print(result[q].select_one("th").a.getText())
@@ -446,37 +456,38 @@ class TocMachine(GraphMachine):
                 st = st + "[阻攻]:  "+playerinfo[19].getText()+"\n********************************\n"
                 st = st + "[失誤]:  "+playerinfo[20].getText()+"\n********************************\n"
                 st = st + "[犯規]:  "+playerinfo[21].getText()+"\n********************************"
+                flag = 1
                 reply_token = event.reply_token
-                send_text_message(reply_token,st) #一次印完
-                self.go_back()
-                #flag = 1
+                send_text_message(reply_token,st)
+                # print_or_not = 1
+                self.go_back_player(event)
                 break
-                # return
-            #reply_token = event.reply_token
-            # if flag == 1:
-            #     send_text_message(reply_token,st)
-            # else:
-            #     send_text_message(reply_token,"the player not exist in P League") #一次印完
-            # self.go_back_player()
+            elif q==92:
+                reply_token = event.reply_token
+                send_text_message(reply_token,"not a P league player!!\nPlease try again~")
+                # print_or_not = 1
+                self.go_back_player(event)
+                     
+    def is_going_to_statsleaderinfo(self, event):
+        text = event.message.text
+        global print_or_not
+        if text.lower() == "show stats leader":
+            print_or_not = 0
+        return text.lower() == "show stats leader"
+    
+    def on_enter_stats_leader_info(self, event):
+        global print_or_not
+        print("I'm entering stats leader")
+        if print_or_not == 0:
+            reply_token = event.reply_token
+            send_text_message(reply_token, "please enter the stats you want to know\n(point/rebound/assist)") #一次印完
             
-    
-    
-    # def is_going_to_gameinfodate(self, event):
-    #     text = event.message.text
-    #     return text.lower() == "show game information (date)"
-    
-    # def on_enter_gameinfodate(self, event):
-    #     #print("I'm entering state1")
-    #     #爬蟲
-    #     reply_token = event.reply_token
-    #     send_text_message(reply_token, "\n12/20") #一次印完
-    #     #self.go_back()
-    
     def is_going_to_point_leader(self, event):
         text = event.message.text
         return text.lower() == "point"
     
     def on_enter_point_leader(self, event):
+        global print_or_not
         print("show point leader\n")
         response = requests.get(pleague)
         soup = BeautifulSoup(response.text, "html.parser")
@@ -491,14 +502,16 @@ class TocMachine(GraphMachine):
             st = st  + str(q-5) + ". " + t_add + "   " + num[q-6][1].getText() + "\n********************************\n"
         #st = result[6].a.getText() + "   " + num1[1].getText() + "\n" + result[7].a.getText() + "   " + num2[1].getText() + "\n" +  result[8].a.getText() + "   " + num3[1].getText() + "\n" + result[9].a.getText() + "   " + num4[1].getText() + "\n" + result[10].a.getText() + "   " + num5[1].getText() + "\n" + result[11].a.getText() +"   " + num6[1].getText() + "\n" + result[12].a.getText() +"   " + num7[1].getText() + "\n" + result[13].a.getText() + "   " + num8[1].getText()
         reply_token = event.reply_token
-        send_text_message(reply_token,st) #一次印完
-        self.go_back()
+        send_text_message(reply_token,st)
+        print_or_not = 1
+        self.go_back_leader(event)
     
     def is_going_to_assist_leader(self, event):
         text = event.message.text
         return text.lower() == "assist"
     
     def on_enter_assist_leader(self, event):
+        global print_or_not
         print("show assist leader")
         response = requests.get(pleague)
         soup = BeautifulSoup(response.text, "html.parser")
@@ -521,14 +534,16 @@ class TocMachine(GraphMachine):
             st = st  + str(q-21) + ". " + t_add + "   " + num[q-22][1].getText() + "\n********************************\n"      
         #st = result[22].a.getText() + "   " + num1[1].getText() + "\n" + result[23].a.getText() + "   " +  num2[1].getText() + "\n" +  result[24].a.getText() + "   " + num3[1].getText() + "\n" + result[25].a.getText() + "   " + num4[1].getText() + "\n" + result[26].a.getText() + "   " + num5[1].getText() + "\n" + result[27].a.getText() +"   " + num6[1].getText() + "\n" + result[28].a.getText() +"   " + num7[1].getText() + "\n" + result[29].a.getText() + "   " + num8[1].getText()
         reply_token = event.reply_token
-        send_text_message(reply_token,st) #一次印完
-        self.go_back()
+        send_text_message(reply_token,st)
+        print_or_not = 1
+        self.go_back_leader(event)
     
     def is_going_to_rebound_leader(self, event):
         text = event.message.text
         return text.lower() == "rebound"
     
     def on_enter_rebound_leader(self, event):
+        global print_or_not
         print("show rebound leader\n")
         response = requests.get(pleague)
         soup = BeautifulSoup(response.text, "html.parser")
@@ -551,12 +566,13 @@ class TocMachine(GraphMachine):
             st = st  +str(q-13) + ". " + t_add + "   " + num[q-14][1].getText() + "\n********************************\n"
         #st = result[14].a.getText() + "   " + num1[1].getText() + "\n" + result[15].a.getText() + "   " + num2[1].getText() + "\n" +  result[16].a.getText() + "   " + num3[1].getText() + "\n" + result[17].a.getText() + "   " + num4[1].getText() + "\n" + result[18].a.getText() + "   " + num5[1].getText() + "\n" + result[19].a.getText() +"   " + num6[1].getText() + "\n" + result[20].a.getText() +"   " + num7[1].getText() + "\n" + result[21].a.getText() + "   " + num8[1].getText()
         reply_token = event.reply_token
-        send_text_message(reply_token,st) #一次印完
-        self.go_back()
+        send_text_message(reply_token,st)
+        print_or_not = 1
+        self.go_back_leader(event)
     
-    # def back_to_menu(self, event):
-    #     text = event.message.text
-    #     return text.lower() == "back to menu"
+    def back_to_menu(self, event):
+        text = event.message.text
+        return text.lower() == "back to menu"
     # def on_exit_state1(self):
     #     print("Leaving state1")
 

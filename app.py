@@ -118,6 +118,18 @@ machine = TocMachine(
             "conditions": "is_going_to_point_leader",
         },
         {
+            "trigger": "go_back_leader",
+            "source": ["point_leader","rebound_leader","assist_leader"],
+            "dest": "stats_leader_info",
+
+        },
+        {
+            "trigger": "go_back_team",
+            "source": ["kings", "lioneers","braves","pilots","dreamers","steelers"],
+            "dest": "teams_info",
+
+        },
+        {
             "trigger": "advance",
             "source": "stats_leader_info",
             "dest": "assist_leader",
@@ -130,9 +142,21 @@ machine = TocMachine(
             "conditions": "is_going_to_rebound_leader",
         },
         {   
-            "trigger": "go_back", 
-            "source": ["highlights","showpic","point_leader", "rebound_leader","assist_leader","kings", "lioneers","braves","pilots","dreamers","steelers","rank_info","player_info","showpic"], 
+            "trigger": "advance", 
+            "source": ["highlights","showpic","stats_leader_info","teams_info","rank_info","choose_pic","choose_player","game_info","highlights"], 
             "dest": "initial",
+            "conditions": "back_to_menu",
+        },
+        {   
+            "trigger": "go_back_player", 
+            "source": "player_info", 
+            "dest": "choose_player",
+        },
+        {   
+            "trigger": "advance", 
+            "source": "showpic", 
+            "dest": "choose_pic",
+            "conditions": "back_to_choose_pic",
         },
     ],
     initial="initial",
@@ -212,7 +236,7 @@ def webhook_handler():
         print(f"REQUEST BODY: \n{body}")
         response = machine.advance(event)
         if response == False:
-            send_text_message(event.reply_token, "invalid input !please try again\nexample input:\nshow game information\nshow team picture\nshow player information\nshow rank information\nshow stats leader")
+            send_text_message(event.reply_token, "invalid input !please try again\n\n********************************\nwhen you in menu:\nshow game information\nshow team picture\nshow player information\nshow rank information\nshow stats leader\nshow highlights\nshow team information\n********************************\nwhen you in stats leader:\npoint\nrebound\nassist\n********************************\nwhen you in player information:\nenter player name\n********************************\nwhen you in team information:\nkings\nbraves\npilots\nlioneers\ndreamers\nsteelers\n********************************\nwhen you in team picture:\nafter pressing the button,enter one more time for a new button\n********************************\nin any state:\nenter back to menu to back to menu")
 
     return "OK"
 
